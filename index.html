@@ -4,127 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Egg Store - Official Order Form</title>
+    
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 15px; }
-        .app-card { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
-        h2 { color: #856404; text-align: center; margin-top: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fdf6e3; padding: 15px; display: flex; justify-content: center; }
+        .app-card { width: 100%; max-width: 450px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); }
+        
+        .hero-img { width: 100%; height: 180px; object-fit: cover; border-radius: 15px; margin-bottom: 20px; border: 3px solid #fef3c7; }
+        
+        h2 { color: #856404; text-align: center; margin-bottom: 5px; font-weight: 800; }
+        .status-msg { text-align: center; color: #666; font-size: 0.9em; margin-bottom: 20px; }
         
         .field-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; font-size: 0.9em; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
-        textarea { resize: none; height: 60px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.9em; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 1rem; transition: 0.3s; }
+        input:focus { border-color: #ffc107; outline: none; background: #fffdf5; }
         
-        .order-summary { background: #fff9e6; border: 2px solid #ffeeba; padding: 15px; border-radius: 10px; margin: 20px 0; }
-        .total-row { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; color: #2d5a27; }
+        .payment-box { background: #f3f0ff; border: 1px solid #dcd3ff; padding: 15px; border-radius: 12px; margin: 15px 0; }
+        .payment-box strong { color: #4c1d95; }
+
+        .order-summary { background: #fffbeb; border: 2px solid #fef3c7; padding: 15px; border-radius: 12px; margin: 20px 0; }
+        .total-row { display: flex; justify-content: space-between; font-size: 1.4em; font-weight: 900; color: #166534; }
         
-        button { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-whatsapp { background: #25D366; color: white; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-whatsapp:hover { background: #128c7e; transform: scale(1.01); }
+        .btn-whatsapp { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; background: #25D366; color: white; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-whatsapp:hover { background: #128c7e; transform: translateY(-2px); }
         
-        .badge { background: #ffd966; padding: 2px 8px; border-radius: 5px; font-size: 0.8em; }
+        #loading-screen { color: #856404; font-weight: bold; text-align: center; padding: 20px; border: 2px dashed #ffd966; border-radius: 10px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="app-card">
-    <h2>🥚 Farm Fresh Eggs</h2>
-    <p style="text-align: center; color: #666; font-size: 0.9em;">Price: 400 per Tray</p>
+    <img src="https://images.unsplash.com/photo-1587486914762-8f0557ac95ba?auto=format&fit=crop&q=80&w=500" class="hero-img" alt="Fresh Farm Eggs">
+    
+    <h2>🥚 Egg Order System</h2>
+    <p class="status-msg">Fresh from the farm to your doorstep</p>
+    
+    <div id="loading-screen">⏳ Setting up farm engine...</div>
 
     <div class="field-group">
-        <label>Your Name:</label>
-        <input type="text" id="cust-name" placeholder="Enter your full name">
+        <label>Full Name:</label>
+        <input type="text" id="cust-name" placeholder="Enter your name">
     </div>
 
     <div class="field-group">
-        <label>Quantity (Trays):</label>
-        <input type="number" id="qty" value="1" min="1" py-input="calculate">
+        <label>Quantity (400/- per Tray):</label>
+        <input type="number" id="qty" value="1" min="1">
     </div>
 
     <div class="field-group">
-        <label>Delivery or Pickup?</label>
-        <select id="method" py-change="calculate">
+        <label>Delivery Method:</label>
+        <select id="method">
             <option value="0">Self Pickup (Free)</option>
-            <option value="150">Home Delivery (+150)</option>
+            <option value="150">Home Delivery (KES 150)</option>
         </select>
     </div>
 
-    <div id="location-box" class="field-group">
-        <label>Delivery Address / Location:</label>
-        <textarea id="cust-loc" placeholder="Street, Apartment, or Landmark"></textarea>
+    <div class="field-group" id="loc-div" style="display:none;">
+        <label>Delivery Address:</label>
+        <textarea id="cust-loc" rows="2" placeholder="Building, House No, or Area"></textarea>
+    </div>
+
+    <div class="payment-box">
+        <p style="margin:0; font-size:0.85em;">💳 <strong>Lipa Na M-PESA</strong></p>
+        <p style="margin:5px 0 0 0; font-size:1em;">Buy Goods Till: <strong>5544332</strong></p>
+        <p style="margin:2px 0 0 0; font-size:0.8em; color:#666;">(Pay total amount before sending order)</p>
     </div>
 
     <div class="order-summary">
         <div class="total-row">
-            <span>Total to Pay:</span>
+            <span>TOTAL:</span>
             <span>KES <span id="final-total">400</span></span>
         </div>
     </div>
 
-    <button py-click="submit_order" class="btn-whatsapp">
-        Send Order via WhatsApp
+    <button id="submit-btn" class="btn-whatsapp">
+        🚀 Complete Order on WhatsApp
     </button>
 </div>
 
 <script type="py">
 from pyscript import document, window
+from pyodide.ffi import create_proxy
+import urllib.parse
 
-# CONFIGURATION
+# --- CONFIG ---
 PRICE_PER_TRAY = 400
-SELLER_PHONE = "254791346220" # <-- PUT YOUR NUMBER HERE
+SELLER_PHONE = "254700000000" # CHANGE TO YOUR NUMBER
+TILL_NUMBER = "5544332"       # CHANGE TO YOUR TILL
 
-def calculate(event=None):
-    # Logic to update price in real-time
+def calculate_logic(event=None):
     try:
-        qty = int(document.querySelector("#qty").value)
+        qty_val = document.querySelector("#qty").value
+        qty = int(qty_val) if qty_val and int(qty_val) > 0 else 0
         fee = int(document.querySelector("#method").value)
         
         total = (qty * PRICE_PER_TRAY) + fee
-        document.querySelector("#final-total").innerText = str(total)
+        document.querySelector("#final-total").innerText = f"{total:,}"
         
-        # Hide/Show location box based on delivery
-        loc_box = document.querySelector("#location-box")
-        loc_box.style.display = "block" if fee > 0 else "none"
-        
+        # Show/Hide location
+        loc_div = document.querySelector("#loc-div")
+        loc_div.style.display = "block" if fee > 0 else "none"
     except:
         pass
 
-def submit_order(event):
-    name = document.querySelector("#cust-name").value
+def send_order(event):
+    name = document.querySelector("#cust-name").value.strip()
     qty = document.querySelector("#qty").value
-    fee = int(document.querySelector("#method").value)
-    loc = document.querySelector("#cust-loc").value
     total = document.querySelector("#final-total").innerText
-    
+    loc = document.querySelector("#cust-loc").value.strip()
+    fee = int(document.querySelector("#method").value)
+
     if not name:
         window.alert("Please enter your name!")
         return
+    if fee > 0 and not loc:
+        window.alert("Please enter your delivery address!")
+        return
 
-    method_text = "DELIVERY" if fee > 0 else "PICKUP"
+    # Constructing the message
+    method_text = "Home Delivery" if fee > 0 else "Self Pickup"
     
-    # Building a clean, professional WhatsApp message
-    message =  f"*NEW EGG ORDER*\n"
-    message += f"--------------------------\n"
-    message += f"*Customer:* {name}\n"
-    message += f"*Quantity:* {qty} Tray(s)\n"
-    message += f"*Method:* {method_text}\n"
+    msg = f"🥚 *NEW EGG ORDER*\n"
+    msg += f"--------------------------\n"
+    msg += f"*Customer:* {name}\n"
+    msg += f"*Quantity:* {qty} Trays\n"
+    msg += f"*Method:* {method_text}\n"
     
     if fee > 0:
-        message += f"*Location:* {loc}\n"
-        
-    message += f"--------------------------\n"
-    message += f"*TOTAL PAYABLE: KES {total}*"
+        msg += f"*Address:* {loc}\n"
     
-    # URL Encoding for WhatsApp
-    import urllib.parse
-    encoded_msg = urllib.parse.quote(message)
-    whatsapp_url = f"https://wa.me/{SELLER_PHONE}?text={encoded_msg}"
-    
-    window.open(whatsapp_url, "_blank")
+    msg += f"--------------------------\n"
+    msg += f"*TOTAL TO PAY:* KES {total}\n"
+    msg += f"*Paid to Till:* {TILL_NUMBER}\n\n"
+    msg += f"⚠️ _Please paste your M-Pesa confirmation message below this line._"
 
-# Run calculation once on load
-calculate()
+    encoded_msg = urllib.parse.quote(msg)
+    window.open(f"https://wa.me/{SELLER_PHONE}?text={encoded_msg}", "_blank")
+
+# Listeners
+calc_proxy = create_proxy(calculate_logic)
+submit_proxy = create_proxy(send_order)
+
+document.querySelector("#qty").addEventListener("input", calc_proxy)
+document.querySelector("#method").addEventListener("change", calc_proxy)
+document.querySelector("#submit-btn").addEventListener("click", submit_proxy)
+
+# Init
+document.querySelector("#loading-screen").style.display = "none"
+calculate_logic()
 </script>
 
 </body>
