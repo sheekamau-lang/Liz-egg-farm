@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egg Store - Official Order Form</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 15px; }
+        .app-card { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        h2 { color: #856404; text-align: center; margin-top: 0; }
+        
+        .field-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; font-size: 0.9em; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
+        textarea { resize: none; height: 60px; }
+        
+        .order-summary { background: #fff9e6; border: 2px solid #ffeeba; padding: 15px; border-radius: 10px; margin: 20px 0; }
+        .total-row { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; color: #2d5a27; }
+        
+        button { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-whatsapp { background: #25D366; color: white; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-whatsapp:hover { background: #128c7e; transform: scale(1.01); }
+        
+        .badge { background: #ffd966; padding: 2px 8px; border-radius: 5px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <h2>🥚 Farm Fresh Eggs</h2>
+    <p style="text-align: center; color: #666; font-size: 0.9em;">Price: 400 per Tray</p>
+
+    <div class="field-group">
+        <label>Your Name:</label>
+        <input type="text" id="cust-name" placeholder="Enter your full name">
+    </div>
+
+    <div class="field-group">
+        <label>Quantity (Trays):</label>
+        <input type="number" id="qty" value="1" min="1" py-input="calculate">
+    </div>
+
+    <div class="field-group">
+        <label>Delivery or Pickup?</label>
+        <select id="method" py-change="calculate">
+            <option value="0">Self Pickup (Free)</option>
+            <option value="150">Home Delivery (+150)</option>
+        </select>
+    </div>
+
+    <div id="location-box" class="field-group">
+        <label>Delivery Address / Location:</label>
+        <textarea id="cust-loc" placeholder="Street, Apartment, or Landmark"></textarea>
+    </div>
+
+    <div class="order-summary">
+        <div class="total-row">
+            <span>Total to Pay:</span>
+            <span>KES <span id="final-total">400</span></span>
+        </div>
+    </div>
+
+    <button py-click="submit_order" class="btn-whatsapp">
+        Send Order via WhatsApp
+    </button>
+</div>
+
+<script type="py">
+from pyscript import document, window
+
+# CONFIGURATION
+PRICE_PER_TRAY = 400
+SELLER_PHONE = "254791346220" # <-- PUT YOUR NUMBER HERE
+
+def calculate(event=None):
+    # Logic to update price in real-time
+    try:
+        qty = int(document.querySelector("#qty").value)
+        fee = int(document.querySelector("#method").value)
+        
+        total = (qty * PRICE_PER_TRAY) + fee
+        document.querySelector("#final-total").innerText = str(total)
+        
+        # Hide/Show location box based on delivery
+        loc_box = document.querySelector("#location-box")
+        loc_box.style.display = "block" if fee > 0 else "none"
+        
+    except:
+        pass
+
+def submit_order(event):
+    name = document.querySelector("#cust-name").value
+    qty = document.querySelector("#qty").value
+    fee = int(document.querySelector("#method").value)
+    loc = document.querySelector("#cust-loc").value
+    total = document.querySelector("#final-total").innerText
+    
+    if not name:
+        window.alert("Please enter your name!")
+        return
+
+    method_text = "DELIVERY" if fee > 0 else "PICKUP"
+    
+    # Building a clean, professional WhatsApp message
+    message =  f"*NEW EGG ORDER*\n"
+    message += f"--------------------------\n"
+    message += f"*Customer:* {name}\n"
+    message += f"*Quantity:* {qty} Tray(s)\n"
+    message += f"*Method:* {method_text}\n"
+    
+    if fee > 0:
+        message += f"*Location:* {loc}\n"
+        
+    message += f"--------------------------\n"
+    message += f"*TOTAL PAYABLE: KES {total}*"
+    
+    # URL Encoding for WhatsApp
+    import urllib.parse
+    encoded_msg = urllib.parse.quote(message)
+    whatsapp_url = f"https://wa.me/{SELLER_PHONE}?text={encoded_msg}"
+    
+    window.open(whatsapp_url, "_blank")
+
+# Run calculation once on load
+calculate()
+</script>
+
+</body>
+</html>
